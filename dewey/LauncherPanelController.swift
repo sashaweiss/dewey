@@ -212,6 +212,24 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
 
         panel.makeKeyAndOrderFront(nil)
         panel.makeFirstResponder(searchField)
+
+        if let fieldEditor = panel.fieldEditor(true, for: searchField) as? NSTextView {
+            disableAutomaticTextProcessing(in: fieldEditor)
+        }
+    }
+
+    /// Queries are app/directory names, so corrections and substitutions
+    /// only fight the fuzzy matcher.
+    private func disableAutomaticTextProcessing(in fieldEditor: NSTextView) {
+        fieldEditor.isAutomaticSpellingCorrectionEnabled = false
+        fieldEditor.isAutomaticTextCompletionEnabled = false
+        fieldEditor.isAutomaticTextReplacementEnabled = false
+        fieldEditor.isAutomaticQuoteSubstitutionEnabled = false
+        fieldEditor.isAutomaticDashSubstitutionEnabled = false
+        fieldEditor.isAutomaticDataDetectionEnabled = false
+        fieldEditor.isAutomaticLinkDetectionEnabled = false
+        fieldEditor.isContinuousSpellCheckingEnabled = false
+        fieldEditor.isGrammarCheckingEnabled = false
     }
 
     func hide() {
