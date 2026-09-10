@@ -10,7 +10,7 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
 
     private enum Metrics {
         static let panelWidth: CGFloat = 640
-        static let searchAreaHeight: CGFloat = 56
+        static let searchAreaHeight: CGFloat = 64
         static let separatorHeight: CGFloat = 1
         static let rowHeight: CGFloat = 44
         static let maxVisibleRows = 8
@@ -64,6 +64,10 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         tableView.headerView = nil
         tableView.rowHeight = Metrics.rowHeight
         tableView.backgroundColor = .clear
+        // The default `.automatic` style pads the top of the table and insets
+        // rows horizontally, which throws off the panel's height math.
+        tableView.style = .plain
+        tableView.intercellSpacing = .zero
         tableView.refusesFirstResponder = true
         tableView.target = self
         tableView.action = #selector(didClickTableRow)
