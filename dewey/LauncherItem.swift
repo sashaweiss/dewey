@@ -15,13 +15,16 @@ struct LauncherItem {
     let kind: Kind
     let name: String
     let url: URL
+    /// Stands in for the file's own icon when set, for items that deserve
+    /// something more distinctive than a generic folder.
+    var customIcon: NSImage?
 
     var subtitle: String {
         (url.path as NSString).abbreviatingWithTildeInPath
     }
 
     var icon: NSImage {
-        NSWorkspace.shared.icon(forFile: url.path)
+        customIcon ?? NSWorkspace.shared.icon(forFile: url.path)
     }
 
     func open() {

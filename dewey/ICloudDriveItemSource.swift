@@ -33,6 +33,17 @@ struct ICloudDriveItemSource: LauncherItemSource {
             ? "iCloud Drive"
             : displayName
 
-        return [LauncherItem(kind: .directory, name: name, url: url)]
+        return [
+            LauncherItem(
+                kind: .directory,
+                name: name,
+                url: url,
+                customIcon: .emoji(
+                    "⛈️",
+                    side: LauncherPanelController.Metrics.iconColumnWidth,
+                    accessibilityDescription: name
+                )
+            )
+        ]
     }
 }
