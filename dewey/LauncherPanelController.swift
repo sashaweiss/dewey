@@ -21,7 +21,15 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         static let rowHeight: CGFloat = 48
         static let maxVisibleRows = 8
         static let listVerticalPadding: CGFloat = 8
-        static let cornerRadius: CGFloat = 14
+        static let cornerRadius: CGFloat = 18
+        static let borderWidth: CGFloat = 1
+
+        /// How far the selected row's fill is inset from the panel's edges.
+        static let selectionInset: CGFloat = 8
+        /// Concentric with the panel's own corners.
+        static var selectionCornerRadius: CGFloat {
+            cornerRadius - selectionInset
+        }
 
         /// Leading edge of the text column, shared by the search field and
         /// row titles.
@@ -142,13 +150,18 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
     }
 
     private func makeContentView() -> NSView {
-        let effectView = NSVisualEffectView()
-        effectView.material = .popover
+        let effectView = PanelBackgroundView()
+        // A floating list of choices over other apps; `menu` is the more
+        // opaque of the appearance-following materials, so the panel keeps
+        // its own surface over a busy desktop.
+        effectView.material = .menu
         effectView.blendingMode = .behindWindow
         effectView.state = .active
+        effectView.isEmphasized = true
         effectView.wantsLayer = true
         effectView.layer?.cornerRadius = Metrics.cornerRadius
         effectView.layer?.cornerCurve = .continuous
+        effectView.layer?.borderWidth = Metrics.borderWidth
         effectView.layer?.masksToBounds = true
 
         for subview in [searchIconView, searchField, separatorView, scrollView] {
@@ -419,6 +432,43 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
 
 // MARK: -
 
+/// The panel's background. Carries a hairline edge so the panel reads as
+/// its own surface rather than dissolving into whatever is behind it.
+/// `CGColor` doesn't track appearance changes, so the border is refreshed
+/// whenever the effective appearance does.
+private final class PanelBackgroundView: NSVisualEffectView {
+    /// `separatorColor` is meant for rules *inside* content, and resolves
+    /// dark on dark — useless on an edge facing an arbitrary desktop. A rim
+    /// light in Dark Mode and a hairline in Light Mode define the panel
+    /// against either.
+    private static let borderColor = NSColor(name: nil) { appearance in
+        switch appearance.bestMatch(from: [.aqua, .darkAqua]) {
+        case .darkAqua:
+            return NSColor(white: 1, alpha: 0.16)
+        default:
+            return NSColor(white: 0, alpha: 0.12)
+        }
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        updateBorderColor()
+    }
+
+    override func viewDidChangeEffectiveAppearance() {
+        super.viewDidChangeEffectiveAppearance()
+        updateBorderColor()
+    }
+
+    private func updateBorderColor() {
+        effectiveAppearance.performAsCurrentDrawingAppearance {
+            layer?.borderColor = Self.borderColor.cgColor
+        }
+    }
+}
+
+// MARK: -
+
 /// A rule drawn in the vibrant separator color. `NSBox`'s separator style
 /// draws opaquely, which reads as a hard seam on top of the panel's
 /// material.
@@ -445,11 +495,9 @@ private final class HairlineView: NSView {
 /// the table never becomes first responder — the search field keeps focus,
 /// but the highlight has to show what Return will open.
 private final class LauncherRowView: NSTableRowView {
-    private enum Metrics {
-        static let horizontalInset: CGFloat = 8
-        static let verticalInset: CGFloat = 2
-        static let cornerRadius: CGFloat = 8
-    }
+    private typealias Metrics = LauncherPanelController.Metrics
+
+    private static let verticalInset: CGFloat = 2
 
     override var interiorBackgroundStyle: NSView.BackgroundStyle {
         return isSelected ? .emphasized : .normal
@@ -459,14 +507,14 @@ private final class LauncherRowView: NSTableRowView {
         guard isSelected else { return }
 
         let rect = bounds.insetBy(
-            dx: Metrics.horizontalInset,
-            dy: Metrics.verticalInset
+            dx: Metrics.selectionInset,
+            dy: Self.verticalInset
         )
         NSColor.selectedContentBackgroundColor.setFill()
         NSBezierPath(
             roundedRect: rect,
-            xRadius: Metrics.cornerRadius,
-            yRadius: Metrics.cornerRadius
+            xRadius: Metrics.selectionCornerRadius,
+            yRadius: Metrics.selectionCornerRadius
         ).fill()
     }
 }
