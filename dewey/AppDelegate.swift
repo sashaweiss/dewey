@@ -20,9 +20,11 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let launcherPanelController = LauncherPanelController(sources: [
             ApplicationItemSource(),
             HomeDirectoryItemSource(),
+            ICloudDriveItemSource(),
         ])
         self.launcherPanelController = launcherPanelController
 
+        DeweyConfig.installDefaultIfAbsent()
         let config = DeweyConfig.load()
         hotKey = GlobalHotKey(
             keyCode: config.hotKey.keyCode,
