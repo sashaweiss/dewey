@@ -23,6 +23,8 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         static let listVerticalPadding: CGFloat = 8
         static let cornerRadius: CGFloat = 18
         static let borderWidth: CGFloat = 1
+        /// Short enough that the panel feels instant on the hot key.
+        static let fadeDuration: TimeInterval = 0.07
 
         /// How far the selected row's fill is inset from the panel's edges.
         static let selectionInset: CGFloat = 8
@@ -45,6 +47,14 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
     /// The y-coordinate the top edge of the panel is pinned to while visible,
     /// so the search field stays put as the result list grows and shrinks.
     private var panelTopY: CGFloat = 0
+
+    /// Whether the panel is up. Tracked explicitly because `alphaValue`
+    /// isn't updated synchronously by the animator, and a panel that's
+    /// mid-fade-out still reports `isVisible`.
+    private var isShowing = false
+    /// Bumped on every fade so a stale fade-out can't order out a panel
+    /// that has since been re-shown.
+    private var fadeGeneration = 0
 
     // MARK: - Views
 
@@ -137,7 +147,9 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         panel.isMovableByWindowBackground = false
         panel.hidesOnDeactivate = false
         panel.isReleasedWhenClosed = false
-        panel.animationBehavior = .utilityWindow
+        // The system fades are slower than a launcher wants; `show`/`hide`
+        // run their own.
+        panel.animationBehavior = .none
 
         super.init(window: panel)
 
@@ -218,7 +230,7 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
     // MARK: - Showing and hiding
 
     func toggle() {
-        if window?.isVisible == true {
+        if isShowing {
             hide()
         } else {
             show()
@@ -237,8 +249,21 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         panelTopY = screenFrame.maxY - screenFrame.height * 0.25
         layoutPanel(centeringOn: screenFrame)
 
+        isShowing = true
+        fadeGeneration += 1
+
+        // Re-showing mid-fade picks up from the current alpha; only a
+        // fully hidden panel starts from zero.
+        if !panel.isVisible {
+            panel.alphaValue = 0
+        }
         panel.makeKeyAndOrderFront(nil)
         panel.makeFirstResponder(searchField)
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = Metrics.fadeDuration
+            panel.animator().alphaValue = 1
+        }
 
         if let fieldEditor = panel.fieldEditor(true, for: searchField) as? NSTextView {
             disableAutomaticTextProcessing(in: fieldEditor)
@@ -260,7 +285,21 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
     }
 
     func hide() {
-        window?.orderOut(nil)
+        guard let panel = window, isShowing else { return }
+
+        isShowing = false
+        fadeGeneration += 1
+        let generation = fadeGeneration
+
+        NSAnimationContext.runAnimationGroup { context in
+            context.duration = Metrics.fadeDuration
+            panel.animator().alphaValue = 0
+        } completionHandler: { [weak self] in
+            // Bail if a `show` came in while this fade was running.
+            guard let self, self.fadeGeneration == generation else { return }
+            panel.orderOut(nil)
+            panel.alphaValue = 0
+        }
     }
 
     /// Resizes the panel to fit the current results, keeping its top edge
