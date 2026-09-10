@@ -8,14 +8,26 @@ import Cocoa
 final class LauncherPanelController: NSWindowController, NSWindowDelegate,
     NSTextFieldDelegate, NSTableViewDataSource, NSTableViewDelegate {
 
-    private enum Metrics {
+    /// Shared by `LauncherItemCellView`, so rows line up with the search
+    /// field above them.
+    enum Metrics {
         static let panelWidth: CGFloat = 640
-        static let searchAreaHeight: CGFloat = 64
+        static let contentInset: CGFloat = 16
+        /// Both the search glyph and row icons center in this column.
+        static let iconColumnWidth: CGFloat = 32
+        static let iconTextSpacing: CGFloat = 12
+        static let searchAreaHeight: CGFloat = 52
         static let separatorHeight: CGFloat = 1
-        static let rowHeight: CGFloat = 44
+        static let rowHeight: CGFloat = 48
         static let maxVisibleRows = 8
         static let listVerticalPadding: CGFloat = 8
         static let cornerRadius: CGFloat = 14
+
+        /// Leading edge of the text column, shared by the search field and
+        /// row titles.
+        static var textLeading: CGFloat {
+            contentInset + iconColumnWidth + iconTextSpacing
+        }
     }
 
     private let sources: [LauncherItemSource]
@@ -53,11 +65,12 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         return field
     }()
 
-    private lazy var separatorBox: NSBox = {
-        let box = NSBox()
-        box.boxType = .separator
-        return box
-    }()
+    private lazy var separatorView = HairlineView()
+
+    /// Collapsed to zero while there are no results, so the panel can be
+    /// exactly `searchAreaHeight` tall without the scroll view's pinned
+    /// edges conflicting.
+    private var separatorHeightConstraint: NSLayoutConstraint?
 
     private lazy var tableView: NSTableView = {
         let tableView = NSTableView()
@@ -89,12 +102,6 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         scrollView.hasVerticalScroller = true
         scrollView.drawsBackground = false
         scrollView.automaticallyAdjustsContentInsets = false
-        scrollView.contentInsets = NSEdgeInsets(
-            top: Metrics.listVerticalPadding / 2,
-            left: 0,
-            bottom: Metrics.listVerticalPadding / 2,
-            right: 0
-        )
         return scrollView
     }()
 
@@ -144,7 +151,7 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         effectView.layer?.cornerCurve = .continuous
         effectView.layer?.masksToBounds = true
 
-        for subview in [searchIconView, searchField, separatorBox, scrollView] {
+        for subview in [searchIconView, searchField, separatorView, scrollView] {
             subview.translatesAutoresizingMaskIntoConstraints = false
             effectView.addSubview(subview)
         }
@@ -156,34 +163,37 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
             to: searchField.centerYAnchor
         )
 
+        let separatorHeight = separatorView.heightAnchor.constraint(
+            equalToConstant: Metrics.separatorHeight
+        )
+        separatorHeightConstraint = separatorHeight
+
         NSLayoutConstraint.activate([
             searchCenterY.constraint(equalToConstant: Metrics.searchAreaHeight / 2),
-            searchIconView.leadingAnchor.constraint(
+            searchIconView.centerXAnchor.constraint(
                 equalTo: effectView.leadingAnchor,
-                constant: 18
+                constant: Metrics.contentInset + Metrics.iconColumnWidth / 2
             ),
 
             fieldCenterY.constraint(equalToConstant: Metrics.searchAreaHeight / 2),
             searchField.leadingAnchor.constraint(
-                equalTo: searchIconView.trailingAnchor,
-                constant: 10
+                equalTo: effectView.leadingAnchor,
+                constant: Metrics.textLeading
             ),
             searchField.trailingAnchor.constraint(
                 equalTo: effectView.trailingAnchor,
-                constant: -18
+                constant: -Metrics.contentInset
             ),
 
-            separatorBox.topAnchor.constraint(
+            separatorView.topAnchor.constraint(
                 equalTo: effectView.topAnchor,
                 constant: Metrics.searchAreaHeight
             ),
-            separatorBox.leadingAnchor.constraint(equalTo: effectView.leadingAnchor),
-            separatorBox.trailingAnchor.constraint(equalTo: effectView.trailingAnchor),
-            separatorBox.heightAnchor.constraint(
-                equalToConstant: Metrics.separatorHeight
-            ),
+            separatorView.leadingAnchor.constraint(equalTo: effectView.leadingAnchor),
+            separatorView.trailingAnchor.constraint(equalTo: effectView.trailingAnchor),
+            separatorHeight,
 
-            scrollView.topAnchor.constraint(equalTo: separatorBox.bottomAnchor),
+            scrollView.topAnchor.constraint(equalTo: separatorView.bottomAnchor),
             scrollView.leadingAnchor.constraint(equalTo: effectView.leadingAnchor),
             scrollView.trailingAnchor.constraint(equalTo: effectView.trailingAnchor),
             scrollView.bottomAnchor.constraint(equalTo: effectView.bottomAnchor),
@@ -245,19 +255,33 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
     private func layoutPanel(centeringOn screenFrame: NSRect? = nil) {
         guard let panel = window else { return }
 
+        let showsList = !results.isEmpty
         let listHeight: CGFloat
-        if results.isEmpty {
-            listHeight = 0
-        } else {
+        if showsList {
             let visibleRows = min(results.count, Metrics.maxVisibleRows)
             listHeight = CGFloat(visibleRows) * Metrics.rowHeight
                 + Metrics.listVerticalPadding
+        } else {
+            listHeight = 0
         }
-        let panelHeight = Metrics.searchAreaHeight + Metrics.separatorHeight
-            + listHeight
+        // Don't reserve the separator's height while it's hidden, or the
+        // search field sits a point above the panel's center.
+        let separatorHeight = showsList ? Metrics.separatorHeight : 0
+        let panelHeight = Metrics.searchAreaHeight + separatorHeight + listHeight
 
-        separatorBox.isHidden = results.isEmpty
-        scrollView.isHidden = results.isEmpty
+        separatorHeightConstraint?.constant = separatorHeight
+        separatorView.isHidden = !showsList
+        scrollView.isHidden = !showsList
+        // The clip view turns these insets into a required minimum height,
+        // which would hold the panel open once the list has been shown
+        // even after the results are cleared.
+        let listInset = showsList ? Metrics.listVerticalPadding / 2 : 0
+        scrollView.contentInsets = NSEdgeInsets(
+            top: listInset,
+            left: 0,
+            bottom: listInset,
+            right: 0
+        )
 
         var frame = panel.frame
         frame.size = NSSize(width: Metrics.panelWidth, height: panelHeight)
@@ -374,6 +398,10 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
 
     // MARK: - NSTableViewDelegate
 
+    func tableView(_ tableView: NSTableView, rowViewForRow row: Int) -> NSTableRowView? {
+        return LauncherRowView()
+    }
+
     func tableView(
         _ tableView: NSTableView,
         viewFor tableColumn: NSTableColumn?,
@@ -386,5 +414,59 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
 
         cellView.configure(with: results[row])
         return cellView
+    }
+}
+
+// MARK: -
+
+/// A rule drawn in the vibrant separator color. `NSBox`'s separator style
+/// draws opaquely, which reads as a hard seam on top of the panel's
+/// material.
+private final class HairlineView: NSView {
+    override var allowsVibrancy: Bool { true }
+
+    override func draw(_ dirtyRect: NSRect) {
+        // One device pixel, so the rule stays crisp rather than reading as
+        // a 2px seam on Retina displays.
+        let thickness = 1 / (window?.backingScaleFactor ?? 2)
+        NSColor.separatorColor.setFill()
+        NSRect(
+            x: bounds.minX,
+            y: bounds.midY - thickness / 2,
+            width: bounds.width,
+            height: thickness
+        ).fill()
+    }
+}
+
+// MARK: -
+
+/// Draws an inset, rounded selection that stays accent-colored even though
+/// the table never becomes first responder — the search field keeps focus,
+/// but the highlight has to show what Return will open.
+private final class LauncherRowView: NSTableRowView {
+    private enum Metrics {
+        static let horizontalInset: CGFloat = 8
+        static let verticalInset: CGFloat = 2
+        static let cornerRadius: CGFloat = 8
+    }
+
+    override var interiorBackgroundStyle: NSView.BackgroundStyle {
+        return isSelected ? .emphasized : .normal
+    }
+
+    override func drawSelection(in dirtyRect: NSRect) {
+        guard isSelected else { return }
+
+        let rect = bounds.insetBy(
+            dx: Metrics.horizontalInset,
+            dy: Metrics.verticalInset
+        )
+        NSColor.selectedContentBackgroundColor.setFill()
+        NSBezierPath(
+            roundedRect: rect,
+            xRadius: Metrics.cornerRadius,
+            yRadius: Metrics.cornerRadius
+        ).fill()
     }
 }

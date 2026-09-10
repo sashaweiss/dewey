@@ -8,6 +8,8 @@ import Cocoa
 final class LauncherItemCellView: NSTableCellView {
     static let reuseIdentifier = NSUserInterfaceItemIdentifier("LauncherItemCellView")
 
+    private typealias Metrics = LauncherPanelController.Metrics
+
     private lazy var iconView: NSImageView = {
         let iconView = NSImageView()
         iconView.imageScaling = .scaleProportionallyUpOrDown
@@ -42,21 +44,36 @@ final class LauncherItemCellView: NSTableCellView {
             addSubview(subview)
         }
 
-        NSLayoutConstraint.activate([
-            // Matches the search icon's leading inset, so the icon column
-            // lines up with the field above.
-            iconView.leadingAnchor.constraint(equalTo: leadingAnchor, constant: 18),
-            iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
-            iconView.widthAnchor.constraint(equalToConstant: 32),
-            iconView.heightAnchor.constraint(equalToConstant: 32),
+        // Center the title/subtitle pair on the row without hardcoding the
+        // fonts' heights.
+        let above = titleLabel.topAnchor.anchorWithOffset(to: centerYAnchor)
+        let below = centerYAnchor.anchorWithOffset(to: subtitleLabel.bottomAnchor)
 
-            titleLabel.leadingAnchor.constraint(equalTo: iconView.trailingAnchor, constant: 10),
-            titleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -18),
-            titleLabel.topAnchor.constraint(equalTo: centerYAnchor, constant: -18),
+        NSLayoutConstraint.activate([
+            iconView.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
+                constant: Metrics.contentInset
+            ),
+            iconView.centerYAnchor.constraint(equalTo: centerYAnchor),
+            iconView.widthAnchor.constraint(equalToConstant: Metrics.iconColumnWidth),
+            iconView.heightAnchor.constraint(equalToConstant: Metrics.iconColumnWidth),
+
+            titleLabel.leadingAnchor.constraint(
+                equalTo: leadingAnchor,
+                constant: Metrics.textLeading
+            ),
+            titleLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: trailingAnchor,
+                constant: -Metrics.contentInset
+            ),
+            above.constraint(equalTo: below),
 
             subtitleLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
-            subtitleLabel.trailingAnchor.constraint(lessThanOrEqualTo: trailingAnchor, constant: -18),
-            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 1),
+            subtitleLabel.trailingAnchor.constraint(
+                lessThanOrEqualTo: trailingAnchor,
+                constant: -Metrics.contentInset
+            ),
+            subtitleLabel.topAnchor.constraint(equalTo: titleLabel.bottomAnchor, constant: 2),
         ])
     }
 
@@ -68,7 +85,7 @@ final class LauncherItemCellView: NSTableCellView {
         didSet {
             switch backgroundStyle {
             case .emphasized:
-                subtitleLabel.textColor = NSColor.white.withAlphaComponent(0.85)
+                subtitleLabel.textColor = NSColor.white.withAlphaComponent(0.7)
             default:
                 subtitleLabel.textColor = .secondaryLabelColor
             }
