@@ -19,6 +19,10 @@ struct LauncherItem {
     /// application's name, so "safari" turns up Safari's windows however
     /// they happen to be titled.
     let name: String
+    /// Further terms the item answers to, matched only when `name`
+    /// doesn't and always ranked below anything that matches a `name`.
+    /// An app vendored by Xcode answers to "Xcode" this way.
+    var alternateNames = [String]()
     /// The application bundle or directory. A window carries its
     /// application's, so it shows the same icon, and so the
     /// application's own row knows to step aside for it.
@@ -26,6 +30,33 @@ struct LauncherItem {
     /// Stands in for the file's own icon when set, for items that deserve
     /// something more distinctive than a generic folder.
     var customIcon: NSImage?
+
+    /// How well an item answers to a query. A match on an alternate name
+    /// ranks below any match on a name, however good it is.
+    struct MatchScore: Comparable {
+        let matchedAlternateName: Bool
+        let value: Int
+
+        static func < (lhs: MatchScore, rhs: MatchScore) -> Bool {
+            if lhs.matchedAlternateName != rhs.matchedAlternateName {
+                return lhs.matchedAlternateName
+            }
+            return lhs.value < rhs.value
+        }
+    }
+
+    func matchScore(for query: String) -> MatchScore? {
+        if let value = FuzzyMatch.score(query: query, candidate: name) {
+            return MatchScore(matchedAlternateName: false, value: value)
+        }
+
+        let alternateValue = alternateNames
+            .compactMap { FuzzyMatch.score(query: query, candidate: $0) }
+            .max()
+        guard let alternateValue else { return nil }
+
+        return MatchScore(matchedAlternateName: true, value: alternateValue)
+    }
 
     /// Set for the rows that stand for a window rather than a file.
     var window: OpenWindow? {

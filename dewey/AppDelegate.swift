@@ -20,6 +20,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let launcherPanelController = LauncherPanelController(sources: [
             OpenWindowSource(),
             ApplicationItemSource(),
+            XcodeApplicationItemSource(),
             HomeDirectoryItemSource(),
             ICloudDriveItemSource(),
         ])

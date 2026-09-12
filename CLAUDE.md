@@ -76,6 +76,23 @@ Four traps, all of them hit:
 - `window-dump.swift` runs from a terminal, so the app being raised is
   never already frontmost. It passes where dewey fails.
 
+## Xcode's vendored apps
+
+Xcode ships applications of its own (Instruments, Simulator, Create ML)
+inside its bundle, under `Contents/Applications` and
+`Contents/Developer/Applications`. The ordinary application scan doesn't
+descend into packages, so they get their own source, which asks
+LaunchServices for every installed Xcode rather than guessing at names
+and locations.
+
+They answer to "Xcode" as well as to their own names, via a
+`LauncherItem`'s `alternateNames`. An alternate name is only consulted
+when the name itself doesn't match, and always ranks below every match
+on a name, so "xcode" turns up Xcode's own windows and row first and the
+vendored apps after. A vendored app that's running steps aside for its
+window rows the way any app does, handing them its alternate names on
+the way out.
+
 ## Building
 
 `./build-release.sh` builds Release and installs to `/Applications`. It

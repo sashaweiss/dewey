@@ -357,12 +357,28 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         )
         guard !appURLsWithWindows.isEmpty else { return allItems }
 
-        return allItems.filter { item in
+        // Stepping aside includes handing over any alternate names, so an
+        // Xcode-vendored app is findable under "Xcode" running or not.
+        var alternateNamesByAppURL = [URL: [String]]()
+        for item in allItems where !item.alternateNames.isEmpty {
             switch item.kind {
             case .application:
-                return !appURLsWithWindows.contains(item.url)
+                alternateNamesByAppURL[item.url] = item.alternateNames
             case .directory, .applicationWindow:
-                return true
+                break
+            }
+        }
+
+        return allItems.compactMap { item in
+            switch item.kind {
+            case .application:
+                return appURLsWithWindows.contains(item.url) ? nil : item
+            case .directory:
+                return item
+            case .applicationWindow:
+                var item = item
+                item.alternateNames = alternateNamesByAppURL[item.url] ?? []
+                return item
             }
         }
     }
@@ -394,15 +410,11 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         if query.isEmpty {
             results = []
         } else {
-            let scoredItems = candidateItems().compactMap { item -> (LauncherItem, Int)? in
-                guard let score = FuzzyMatch.score(
-                    query: query,
-                    candidate: item.name
-                ) else {
-                    return nil
+            let scoredItems = candidateItems()
+                .compactMap { item -> (LauncherItem, LauncherItem.MatchScore)? in
+                    guard let score = item.matchScore(for: query) else { return nil }
+                    return (item, score)
                 }
-                return (item, score)
-            }
             results = scoredItems
                 .sorted { lhs, rhs in
                     if lhs.1 != rhs.1 {
