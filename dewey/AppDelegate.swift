@@ -18,6 +18,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.setActivationPolicy(.accessory)
 
         let launcherPanelController = LauncherPanelController(sources: [
+            OpenWindowSource(),
             ApplicationItemSource(),
             HomeDirectoryItemSource(),
             ICloudDriveItemSource(),

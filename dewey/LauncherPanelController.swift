@@ -346,14 +346,59 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
 
     // MARK: - Search
 
+    /// Everything worth searching. An app with windows of its own to
+    /// offer is represented by those instead of by its own row, so it
+    /// turns up once per thing you could actually switch to. An app with
+    /// none — not running, or every window untitled or hidden — keeps
+    /// its plain row.
+    private func candidateItems() -> [LauncherItem] {
+        let appURLsWithWindows = Set(
+            allItems.filter { $0.window != nil }.map(\.url)
+        )
+        guard !appURLsWithWindows.isEmpty else { return allItems }
+
+        return allItems.filter { item in
+            switch item.kind {
+            case .application:
+                return !appURLsWithWindows.contains(item.url)
+            case .directory, .applicationWindow:
+                return true
+            }
+        }
+    }
+
+    /// Orders two results the matcher scored the same and that share a
+    /// name — in practice, one app's windows. Windows on this space come
+    /// before windows on others, front-most first within each, and a
+    /// plain row sorts ahead of any window.
+    private static func isOrderedBefore(
+        _ lhs: LauncherItem,
+        _ rhs: LauncherItem
+    ) -> Bool {
+        switch (lhs.window, rhs.window) {
+        case (let lhsWindow?, let rhsWindow?):
+            if lhsWindow.isOnScreen != rhsWindow.isOnScreen {
+                return lhsWindow.isOnScreen
+            }
+            return lhsWindow.stackOrder < rhsWindow.stackOrder
+        case (nil, .some):
+            return true
+        case (.some, nil), (nil, nil):
+            return false
+        }
+    }
+
     private func updateResults() {
         let query = searchField.stringValue.trimmingCharacters(in: .whitespaces)
 
         if query.isEmpty {
             results = []
         } else {
-            let scoredItems = allItems.compactMap { item -> (LauncherItem, Int)? in
-                guard let score = FuzzyMatch.score(query: query, candidate: item.name) else {
+            let scoredItems = candidateItems().compactMap { item -> (LauncherItem, Int)? in
+                guard let score = FuzzyMatch.score(
+                    query: query,
+                    candidate: item.name
+                ) else {
                     return nil
                 }
                 return (item, score)
@@ -363,8 +408,11 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
                     if lhs.1 != rhs.1 {
                         return lhs.1 > rhs.1
                     }
-                    return lhs.0.name.localizedCaseInsensitiveCompare(rhs.0.name)
-                        == .orderedAscending
+                    let byName = lhs.0.name.localizedCaseInsensitiveCompare(rhs.0.name)
+                    if byName != .orderedSame {
+                        return byName == .orderedAscending
+                    }
+                    return Self.isOrderedBefore(lhs.0, rhs.0)
                 }
                 .map(\.0)
         }

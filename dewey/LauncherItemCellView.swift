@@ -94,7 +94,7 @@ final class LauncherItemCellView: NSTableCellView {
 
     func configure(with item: LauncherItem) {
         iconView.image = item.icon
-        titleLabel.stringValue = item.name
+        titleLabel.stringValue = item.title
         subtitleLabel.stringValue = item.subtitle
     }
 }
