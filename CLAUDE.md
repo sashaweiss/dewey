@@ -95,12 +95,43 @@ the way out.
 
 ## Building
 
-`./build-release.sh` builds Release and installs to `/Applications`. It
-errors out rather than replacing the bundle under a running dewey, so
-quit it first. The fixed install path is the point: the Screen Recording
-and Accessibility grants are keyed to the bundle identifier and code
-signature, so installing there each time keeps them, where running a
-copy from somewhere else means granting them again.
+`./build-release.sh` archives Release, exports it signed for Developer
+ID, notarizes it, staples the ticket, and leaves `dist/dewey.app` and a
+zip of it. It installs nothing — where the app goes is yours to decide,
+but decide once: the Screen Recording and Accessibility grants are keyed
+to the bundle identifier and code signature, so a copy run from
+somewhere else asks for both again.
+
+A Developer ID signature is not the one Xcode's own builds carry, so
+those two are separate apps as far as the grants are concerned. Running
+from Xcode and running a build from here means granting each of them.
+
+The archive action needs a scheme where the old plain build didn't, and
+gets one without a scheme file in the repo: with Xcode set to autocreate
+schemes, both it and `xcodebuild` conjure a `dewey` scheme from the
+target. Ticking Shared doesn't write one out — an autocreated scheme is
+never persisted — which is also why archiving logs that the scheme's
+supported platforms are empty. The archive is correct regardless.
+
+Export is left on automatic signing: it picks the Developer ID identity
+from the export method, and `-allowProvisioningUpdates` fetches the
+profile carrying the enhanced-security entitlements rather than making
+one a checked-in file that expires.
+
+Notarizing reads credentials from a keychain profile named `dewey`
+(`NOTARY_PROFILE` overrides), stored once by running `xcrun notarytool
+store-credentials dewey` and answering its prompts. A rejection reports
+only "Invalid"; `xcrun notarytool log <id>`, with the submission id the
+script prints, says what was wrong.
+
+Every step there is one the app can't ship without. Checks on top of
+them earned nothing and cost twice: `notarytool history --limit`, which
+doesn't take that flag and so condemned working credentials, and
+`spctl --assess`, which called an app "Unnotarized Developer ID"
+minutes after Apple accepted it. Notarization succeeding and
+`stapler staple` succeeding are the signals — stapling validates the
+ticket against the bundle on its way, so there's nothing left to
+confirm afterwards.
 
 `./window-dump.swift` is the bench for the open-window rows — see its
 header for what it checks and what it said when the current rules were
