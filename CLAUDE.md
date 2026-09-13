@@ -106,6 +106,27 @@ copy from somewhere else means granting them again.
 header for what it checks and what it said when the current rules were
 written.
 
+## Enhanced security
+
+`ENABLE_ENHANCED_SECURITY` is on for the project. It's an umbrella
+setting: pointer authentication, stack zero-init, typed allocators and
+the security warnings all default from it, so a newer Xcode adding
+another one turns it on here too. Don't pin them one by one.
+
+`dewey/dewey.entitlements` opts into the runtime half. It follows the
+set Xcode's Enhanced Security capability writes, plus
+`checked-allocations` for memory tagging. That last one needs EMTE
+hardware to do anything, and a VM doesn't report it however capable the
+host is, so it goes untested unless someone builds on the metal. The
+`WindowServer.swift` calls are what would trip it first, and
+`...checked-allocations.soft-mode` downgrades a kill to a report if it
+comes to that.
+
+Entitlements aren't part of what the Screen Recording and Accessibility
+grants are keyed to, so adding them doesn't cost the permissions.
+Automatic signing does have to put them in a profile, which is a new way
+for a build to fail.
+
 ## Config
 
 - A JSON file, read once at launch.
