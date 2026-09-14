@@ -7,11 +7,11 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		D96AAD5530525EE8003E47B3 /* dewey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dewey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D950252A3057BB1000BC500F /* dewey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dewey.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
-		D96AAD5730525EE8003E47B3 /* dewey */ = {
+		D950252C3057BB1000BC500F /* dewey */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = dewey;
 			sourceTree = "<group>";
@@ -19,7 +19,7 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
-		D96AAD5230525EE8003E47B3 /* Frameworks */ = {
+		D95025273057BB1000BC500F /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -27,18 +27,18 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		D96AAD4C30525EE8003E47B3 = {
+		D95025213057BB1000BC500F = {
 			isa = PBXGroup;
 			children = (
-				D96AAD5730525EE8003E47B3 /* dewey */,
-				D96AAD5630525EE8003E47B3 /* Products */,
+				D950252C3057BB1000BC500F /* dewey */,
+				D950252B3057BB1000BC500F /* Products */,
 			);
 			sourceTree = "<group>";
 		};
-		D96AAD5630525EE8003E47B3 /* Products */ = {
+		D950252B3057BB1000BC500F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D96AAD5530525EE8003E47B3 /* dewey.app */,
+				D950252A3057BB1000BC500F /* dewey.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -46,60 +46,60 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		D96AAD5430525EE8003E47B3 /* dewey */ = {
+		D95025293057BB1000BC500F /* dewey */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = D96AAD6330525EE9003E47B3 /* Build configuration list for PBXNativeTarget "dewey" */;
+			buildConfigurationList = D95025383057BB1000BC500F /* Build configuration list for PBXNativeTarget "dewey" */;
 			buildPhases = (
-				D96AAD5130525EE8003E47B3 /* Sources */,
-				D96AAD5230525EE8003E47B3 /* Frameworks */,
-				D96AAD5330525EE8003E47B3 /* Resources */,
+				D95025263057BB1000BC500F /* Sources */,
+				D95025273057BB1000BC500F /* Frameworks */,
+				D95025283057BB1000BC500F /* Resources */,
 			);
 			buildRules = (
 			);
 			fileSystemSynchronizedGroups = (
-				D96AAD5730525EE8003E47B3 /* dewey */,
+				D950252C3057BB1000BC500F /* dewey */,
 			);
 			name = dewey;
 			productName = dewey;
-			productReference = D96AAD5530525EE8003E47B3 /* dewey.app */;
+			productReference = D950252A3057BB1000BC500F /* dewey.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
-		D96AAD4D30525EE8003E47B3 /* Project object */ = {
+		D95025223057BB1000BC500F /* Project object */ = {
 			isa = PBXProject;
 			attributes = {
 				BuildIndependentTargetsInParallel = 1;
 				LastSwiftUpdateCheck = 2700;
 				LastUpgradeCheck = 2700;
 				TargetAttributes = {
-					D96AAD5430525EE8003E47B3 = {
+					D95025293057BB1000BC500F = {
 						CreatedOnToolsVersion = 27.0;
 					};
 				};
 			};
-			buildConfigurationList = D96AAD5030525EE8003E47B3 /* Build configuration list for PBXProject "dewey" */;
+			buildConfigurationList = D95025253057BB1000BC500F /* Build configuration list for PBXProject "dewey" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
 				Base,
 			);
-			mainGroup = D96AAD4C30525EE8003E47B3;
+			mainGroup = D95025213057BB1000BC500F;
 			minimizedProjectReferenceProxies = 1;
 			preferredProjectObjectVersion = 77;
-			productRefGroup = D96AAD5630525EE8003E47B3 /* Products */;
+			productRefGroup = D950252B3057BB1000BC500F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				D96AAD5430525EE8003E47B3 /* dewey */,
+				D95025293057BB1000BC500F /* dewey */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
-		D96AAD5330525EE8003E47B3 /* Resources */ = {
+		D95025283057BB1000BC500F /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			files = (
 			);
@@ -107,7 +107,7 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
-		D96AAD5130525EE8003E47B3 /* Sources */ = {
+		D95025263057BB1000BC500F /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
 			);
@@ -115,7 +115,7 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
-		D96AAD6130525EE9003E47B3 /* Debug configuration for PBXProject "dewey" */ = {
+		D95025363057BB1000BC500F /* Debug configuration for PBXProject "dewey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -150,9 +150,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = JC85V584XZ;
-				ENABLE_ENHANCED_SECURITY = YES;
-				ENABLE_HARDWARE_CHECKED_POINTER_ARITHMETIC_SLICE = YES;
+				DEVELOPMENT_TEAM = UG9NWXG877;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -181,7 +179,7 @@
 			};
 			name = Debug;
 		};
-		D96AAD6230525EE9003E47B3 /* Release configuration for PBXProject "dewey" */ = {
+		D95025373057BB1000BC500F /* Release configuration for PBXProject "dewey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
@@ -216,9 +214,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = JC85V584XZ;
-				ENABLE_ENHANCED_SECURITY = YES;
-				ENABLE_HARDWARE_CHECKED_POINTER_ARITHMETIC_SLICE = YES;
+				DEVELOPMENT_TEAM = UG9NWXG877;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -239,22 +235,18 @@
 			};
 			name = Release;
 		};
-		D96AAD6430525EE9003E47B3 /* Debug configuration for PBXNativeTarget "dewey" */ = {
+		D95025393057BB1000BC500F /* Debug configuration for PBXNativeTarget "dewey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = dewey/dewey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UG9NWXG877;
 				ENABLE_APP_SANDBOX = NO;
-				ENABLE_ENHANCED_SECURITY = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Dewey;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
@@ -277,22 +269,18 @@
 			};
 			name = Debug;
 		};
-		D96AAD6530525EE9003E47B3 /* Release configuration for PBXNativeTarget "dewey" */ = {
+		D950253A3057BB1000BC500F /* Release configuration for PBXNativeTarget "dewey" */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = dewey/dewey.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = UG9NWXG877;
 				ENABLE_APP_SANDBOX = NO;
-				ENABLE_ENHANCED_SECURITY = YES;
 				ENABLE_HARDENED_RUNTIME = YES;
-				ENABLE_USER_SELECTED_FILES = readonly;
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_CFBundleDisplayName = Dewey;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.utilities";
 				INFOPLIST_KEY_NSHumanReadableCopyright = "";
 				INFOPLIST_KEY_NSMainStoryboardFile = Main;
@@ -318,24 +306,24 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		D96AAD5030525EE8003E47B3 /* Build configuration list for PBXProject "dewey" */ = {
+		D95025253057BB1000BC500F /* Build configuration list for PBXProject "dewey" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D96AAD6130525EE9003E47B3 /* Debug configuration for PBXProject "dewey" */,
-				D96AAD6230525EE9003E47B3 /* Release configuration for PBXProject "dewey" */,
+				D95025363057BB1000BC500F /* Debug configuration for PBXProject "dewey" */,
+				D95025373057BB1000BC500F /* Release configuration for PBXProject "dewey" */,
 			);
 			defaultConfigurationName = Release;
 		};
-		D96AAD6330525EE9003E47B3 /* Build configuration list for PBXNativeTarget "dewey" */ = {
+		D95025383057BB1000BC500F /* Build configuration list for PBXNativeTarget "dewey" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
-				D96AAD6430525EE9003E47B3 /* Debug configuration for PBXNativeTarget "dewey" */,
-				D96AAD6530525EE9003E47B3 /* Release configuration for PBXNativeTarget "dewey" */,
+				D95025393057BB1000BC500F /* Debug configuration for PBXNativeTarget "dewey" */,
+				D950253A3057BB1000BC500F /* Release configuration for PBXNativeTarget "dewey" */,
 			);
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
-	rootObject = D96AAD4D30525EE8003E47B3 /* Project object */;
+	rootObject = D95025223057BB1000BC500F /* Project object */;
 	validationLevel = 1;
 }
