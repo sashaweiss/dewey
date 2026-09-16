@@ -6,8 +6,8 @@ A Spotlight-replacement launcher. Native AppKit (no SwiftUI), macOS only.
 
 These are non-negotiable.
 
-- No network requests, ever.
-- No persistence of any kind, besides the config JSON.
+- We make no network requests, ever.
+- We don't persist anything ourselves, besides the config JSON.
     - All other filesystem access must be read-only.
 
 ## Inspiration from other projects
