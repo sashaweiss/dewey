@@ -6,7 +6,8 @@
 import Cocoa
 
 /// Finds `.app` bundles in the standard application directories, descending
-/// one level into subfolders (e.g. /Applications/Utilities).
+/// one level into subfolders (e.g. /Applications/Utilities), plus a few
+/// named ones that live outside those directories.
 struct ApplicationItemSource: LauncherItemSource {
     private static let searchDirectoryPaths: [String] = [
         "/Applications",
@@ -16,9 +17,27 @@ struct ApplicationItemSource: LauncherItemSource {
         NSHomeDirectory() + "/Applications",
     ]
 
+    /// Bundles worth a row that no search directory covers. Finder sits in
+    /// CoreServices, alongside Dock, loginwindow, and other things nobody
+    /// launches, so it's named rather than scanned for. Opening it brings
+    /// its windows forward, or makes one when there are none, just as
+    /// clicking its Dock icon does.
+    private static let applicationPaths: [String] = [
+        "/System/Library/CoreServices/Finder.app",
+    ]
+
     func loadItems() -> [LauncherItem] {
         let fileManager = FileManager.default
         var itemsByURL = [URL: LauncherItem]()
+
+        for path in Self.applicationPaths where fileManager.fileExists(atPath: path) {
+            let resolvedURL = URL(fileURLWithPath: path).resolvingSymlinksInPath()
+            itemsByURL[resolvedURL] = LauncherItem(
+                kind: .application,
+                name: fileManager.displayName(atPath: resolvedURL.path),
+                url: resolvedURL
+            )
+        }
 
         for path in Self.searchDirectoryPaths {
             let directoryURL = URL(fileURLWithPath: path, isDirectory: true)
