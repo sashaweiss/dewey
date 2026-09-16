@@ -57,13 +57,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         statusItem.button?.image = NSImage.emoji(
             "📚",
             side: 18,
-            accessibilityDescription: "dewey"
+            accessibilityDescription: Bundle.main.appName
         )
 
         let menu = NSMenu()
 
         let toggleItem = NSMenuItem(
-            title: "Toggle dewey (\(hotKeyChord.displayString))",
+            title: "Toggle \(Bundle.main.appName) (\(hotKeyChord.displayString))",
             action: #selector(didSelectToggleMenuItem),
             keyEquivalent: ""
         )
@@ -73,7 +73,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(NSMenuItem(
-            title: "Quit dewey",
+            title: "Quit \(Bundle.main.appName)",
             action: #selector(NSApplication.terminate(_:)),
             keyEquivalent: "q"
         ))
@@ -88,3 +88,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
+// MARK: -
+
+private extension Bundle {
+    /// The app's name, which is suffixed in debug builds so a debug
+    /// instance is distinguishable from a release one.
+    var appName: String {
+        return object(forInfoDictionaryKey: "CFBundleName") as? String
+            ?? "dewey"
+    }
+}
