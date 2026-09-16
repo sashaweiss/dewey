@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXFileReference section */
-		D950252A3057BB1000BC500F /* dewey.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = dewey.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		D950252A3057BB1000BC500F /* dewey-debug.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "dewey-debug.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -38,7 +38,7 @@
 		D950252B3057BB1000BC500F /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				D950252A3057BB1000BC500F /* dewey.app */,
+				D950252A3057BB1000BC500F /* dewey-debug.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -61,7 +61,7 @@
 			);
 			name = dewey;
 			productName = dewey;
-			productReference = D950252A3057BB1000BC500F /* dewey.app */;
+			productReference = D950252A3057BB1000BC500F /* dewey-debug.app */;
 			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
