@@ -42,7 +42,9 @@ struct OpenWindowSource: LauncherItemSource {
         guard !hasAskedForScreenRecording else { return false }
 
         hasAskedForScreenRecording = true
-        NSLog("Asking for Screen Recording; without it there are no window rows.")
+        Logger.info(
+            "Asking for Screen Recording; without it there are no window rows."
+        )
         return CGRequestScreenCaptureAccess()
     }
 

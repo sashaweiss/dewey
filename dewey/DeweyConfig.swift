@@ -49,7 +49,9 @@ struct DeweyConfig: Equatable, Codable {
             if let chord = HotKeyChord(rawValue: rawHotKey) {
                 hotKey = chord
             } else {
-                NSLog("Ignoring unparseable hotKey in config: \(rawHotKey)")
+                Logger.warn(
+                    "Ignoring unparseable hotKey in config: \(rawHotKey)"
+                )
             }
         }
         includeOpenWindows = try container
@@ -126,7 +128,7 @@ struct DeweyConfig: Equatable, Codable {
     private static func absolutePaths(paths: [String]) -> [String] {
         paths.filter { path in
             guard (path as NSString).expandingTildeInPath.hasPrefix("/") else {
-                NSLog("Ignoring non-absolute path in config: \(path)")
+                Logger.warn("Ignoring non-absolute path in config: \(path)")
                 return false
             }
             return true

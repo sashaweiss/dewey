@@ -77,7 +77,7 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
             config = try DeweyConfig.load()
             applyConfig(config)
         } catch {
-            NSLog("Couldn't reload config: \(error)")
+            Logger.error("Couldn't reload config: \(error)")
             loadError = error
         }
         generalPane.reload(config: config)
@@ -109,8 +109,11 @@ final class SettingsWindowController: NSWindowController, NSWindowDelegate {
         do {
             try newConfig.save()
         } catch {
-            NSLog("Couldn't save config: \(error)")
-            presentAlert(message: "dewey couldn't save its config.", error: error)
+            Logger.error("Couldn't save config: \(error)")
+            presentAlert(
+                message: "dewey couldn't save its config.",
+                error: error
+            )
             return
         }
         config = newConfig

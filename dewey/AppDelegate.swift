@@ -28,7 +28,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         do {
             config = try DeweyConfig.load()
         } catch {
-            NSLog("Ignoring unreadable config: \(error)")
+            Logger.error("Ignoring unreadable config: \(error)")
             config = DeweyConfig()
         }
         apply(config: config)
@@ -57,7 +57,9 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             sources.append(XcodeApplicationItemSource())
         }
         sources += config.searchedDirectories.map {
-            DirectoryItemSource(directoryURL: DeweyConfig.directoryURL(path: $0))
+            DirectoryItemSource(
+                directoryURL: DeweyConfig.directoryURL(path: $0)
+            )
         }
         if config.includeICloudDrive {
             sources.append(ICloudDriveItemSource())
@@ -75,7 +77,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             launcherPanelController?.toggle()
         }
         if hotKey == nil {
-            NSLog("Failed to register global hot key \(config.hotKey.displayString)!")
+            Logger.error(
+                "Failed to register global hot key " +
+                    "\(config.hotKey.displayString)!"
+            )
         }
         hotKeyChord = config.hotKey
         toggleMenuItem?.title =
