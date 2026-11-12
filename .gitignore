@@ -2,3 +2,8 @@
 DerivedData
 xcuserdata/
 dist
+.build/
+.swiftpm/
+
+/release/
+release-identity.json
