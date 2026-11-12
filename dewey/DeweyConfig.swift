@@ -14,6 +14,7 @@ struct DeweyConfig: Equatable, Codable {
         case includeICloudDrive
         case applicationDirectories
         case searchedDirectories
+        case files
     }
 
     var hotKey = HotKeyChord.default
@@ -30,6 +31,8 @@ struct DeweyConfig: Equatable, Codable {
     ]
     /// Their subdirectories are searched.
     var searchedDirectories = ["~"]
+    /// Included themselves.
+    var files = [String]()
 
     static let fileURL = URL(
         fileURLWithPath: NSHomeDirectory() + "/.config/dewey/config.json"
@@ -71,6 +74,10 @@ struct DeweyConfig: Equatable, Codable {
             .decodeIfPresent([String].self, forKey: .searchedDirectories)
             .map { Self.absolutePaths(paths: $0) }
             ?? searchedDirectories
+        files = try container
+            .decodeIfPresent([String].self, forKey: .files)
+            .map { Self.absolutePaths(paths: $0) }
+            ?? files
     }
 
     func encode(to encoder: any Encoder) throws {
@@ -87,6 +94,7 @@ struct DeweyConfig: Equatable, Codable {
             forKey: .applicationDirectories
         )
         try container.encode(searchedDirectories, forKey: .searchedDirectories)
+        try container.encode(files, forKey: .files)
     }
 
     /// Returns the defaults if there's no config file.
@@ -118,11 +126,8 @@ struct DeweyConfig: Equatable, Codable {
     }
 
     /// Expands a leading `~`.
-    static func directoryURL(path: String) -> URL {
-        URL(
-            fileURLWithPath: (path as NSString).expandingTildeInPath,
-            isDirectory: true
-        )
+    static func url(path: String) -> URL {
+        URL(fileURLWithPath: (path as NSString).expandingTildeInPath)
     }
 
     private static func absolutePaths(paths: [String]) -> [String] {

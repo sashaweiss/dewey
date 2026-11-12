@@ -364,7 +364,7 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
             switch item.kind {
             case .application:
                 alternateNamesByAppURL[item.url] = item.alternateNames
-            case .directory, .applicationWindow:
+            case .directory, .file, .applicationWindow:
                 break
             }
         }
@@ -373,7 +373,7 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
             switch item.kind {
             case .application:
                 return appURLsWithWindows.contains(item.url) ? nil : item
-            case .directory:
+            case .directory, .file:
                 return item
             case .applicationWindow:
                 var item = item

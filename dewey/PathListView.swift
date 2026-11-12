@@ -5,7 +5,7 @@
 
 import Cocoa
 
-/// An editable list of directory paths, with add and remove buttons.
+/// An editable list of file or directory paths, with add and remove buttons.
 final class PathListView: NSView, NSTableViewDataSource, NSTableViewDelegate {
     private enum Metrics {
         static let width: CGFloat = 420
@@ -32,6 +32,7 @@ final class PathListView: NSView, NSTableViewDataSource, NSTableViewDelegate {
     var onChange: ([String]) -> Void = { _ in }
 
     private let openPanelMessage: String
+    private let choosesFiles: Bool
 
     private lazy var tableView: NSTableView = {
         let tableView = NSTableView()
@@ -75,8 +76,9 @@ final class PathListView: NSView, NSTableViewDataSource, NSTableViewDelegate {
         return buttons
     }()
 
-    init(openPanelMessage: String) {
+    init(openPanelMessage: String, choosesFiles: Bool) {
         self.openPanelMessage = openPanelMessage
+        self.choosesFiles = choosesFiles
         super.init(frame: .zero)
 
         addSubview(scrollView)
@@ -154,8 +156,8 @@ final class PathListView: NSView, NSTableViewDataSource, NSTableViewDelegate {
         guard let window else { return }
 
         let panel = NSOpenPanel()
-        panel.canChooseFiles = false
-        panel.canChooseDirectories = true
+        panel.canChooseFiles = choosesFiles
+        panel.canChooseDirectories = !choosesFiles
         panel.allowsMultipleSelection = true
         panel.message = openPanelMessage
         let response = await panel.beginSheetModal(for: window)

@@ -50,17 +50,18 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
         sources.append(ApplicationItemSource(
             directoryURLs: config.applicationDirectories.map {
-                DeweyConfig.directoryURL(path: $0)
+                DeweyConfig.url(path: $0)
             }
         ))
         if config.includeXcodeApplications {
             sources.append(XcodeApplicationItemSource())
         }
         sources += config.searchedDirectories.map {
-            DirectoryItemSource(
-                directoryURL: DeweyConfig.directoryURL(path: $0)
-            )
+            DirectoryItemSource(directoryURL: DeweyConfig.url(path: $0))
         }
+        sources.append(FileItemSource(
+            fileURLs: config.files.map { DeweyConfig.url(path: $0) }
+        ))
         if config.includeICloudDrive {
             sources.append(ICloudDriveItemSource())
         }

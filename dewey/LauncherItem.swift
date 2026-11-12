@@ -6,11 +6,12 @@
 import Cocoa
 
 /// A single openable result in the launcher: an application, one of a
-/// running application's windows, or a directory.
+/// running application's windows, a directory, or a file.
 struct LauncherItem {
     enum Kind {
         case application
         case directory
+        case file
         case applicationWindow(OpenWindow)
     }
 
@@ -61,7 +62,7 @@ struct LauncherItem {
     /// Set for the rows that stand for a window rather than a file.
     var window: OpenWindow? {
         switch kind {
-        case .application, .directory:
+        case .application, .directory, .file:
             return nil
         case .applicationWindow(let window):
             return window
@@ -72,7 +73,7 @@ struct LauncherItem {
     /// what distinguishes it from its app's other windows.
     var title: String {
         switch kind {
-        case .application, .directory:
+        case .application, .directory, .file:
             return name
         case .applicationWindow(let window):
             return window.title
@@ -81,7 +82,7 @@ struct LauncherItem {
 
     var subtitle: String {
         switch kind {
-        case .application, .directory:
+        case .application, .directory, .file:
             return (url.path as NSString).abbreviatingWithTildeInPath
         case .applicationWindow:
             return name
@@ -102,7 +103,7 @@ struct LauncherItem {
                 configuration: configuration,
                 completionHandler: nil
             )
-        case .directory:
+        case .directory, .file:
             NSWorkspace.shared.open(url)
         case .applicationWindow(let window):
             WindowRaiser.raise(window)

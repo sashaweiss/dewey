@@ -61,7 +61,10 @@ final class GeneralSettingsViewController: NSViewController {
         view.addSubview(gridView)
         gridView.translatesAutoresizingMaskIntoConstraints = false
         NSLayoutConstraint.activate([
-            gridView.topAnchor.constraint(equalTo: view.topAnchor, constant: 20),
+            gridView.topAnchor.constraint(
+                equalTo: view.topAnchor,
+                constant: 20
+            ),
             gridView.bottomAnchor.constraint(
                 equalTo: view.bottomAnchor,
                 constant: -20
