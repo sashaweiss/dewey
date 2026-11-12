@@ -31,6 +31,12 @@ final class LauncherPanel: NSPanel {
             return NSApp.sendAction(#selector(NSText.paste(_:)), to: nil, from: self)
         case "x":
             return NSApp.sendAction(#selector(NSText.cut(_:)), to: nil, from: self)
+        case ",":
+            return NSApp.sendAction(
+                #selector(AppDelegate.showSettings(_:)),
+                to: nil,
+                from: self
+            )
         default:
             return false
         }

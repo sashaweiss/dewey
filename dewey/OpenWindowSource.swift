@@ -5,23 +5,13 @@
 
 import Cocoa
 
-/// Finds the windows of running applications, across every space, as
-/// rows of their own.
-///
-/// A window earns a row if it has a title — what tells one of an app's
-/// windows from another, and what an app's offscreen scratch windows
-/// tend to lack — and if the window server would actually draw it
-/// somewhere. Rows are scored against their *application's* name rather
-/// than their title, so "safari" turns up every Safari window whatever
-/// each is called.
+/// Finds titled, visible windows of running apps, across every space,
+/// matched by their app's name.
 struct OpenWindowSource: LauncherItemSource {
-    /// Windows smaller than this in either dimension are palettes, HUDs,
-    /// and the like, rather than somewhere you'd switch to.
+    /// Smaller windows are palettes, HUDs, and the like.
     private static let minimumWindowSide: CGFloat = 120
 
-    /// Reading window titles needs Screen Recording. Unlike
-    /// ScreenCaptureKit, the window list won't prompt for it on its own,
-    /// so ask — once, and never again in this run whatever the answer.
+    /// Screen Recording, needed for window titles, is asked for once a run.
     private static var hasAskedForScreenRecording = false
 
     func loadItems() -> [LauncherItem] {

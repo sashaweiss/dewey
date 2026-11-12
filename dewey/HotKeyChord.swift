@@ -7,7 +7,7 @@ import Carbon.HIToolbox
 import Cocoa
 
 /// A parsed global hot key combination, e.g. "command+space".
-struct HotKeyChord {
+struct HotKeyChord: Equatable {
     let keyCode: Int
     let keyName: String
     let modifierFlags: NSEvent.ModifierFlags
@@ -51,6 +51,17 @@ struct HotKeyChord {
         self.keyCode = keyCode
         self.keyName = keyName
         self.modifierFlags = modifierFlags
+    }
+
+    /// The chord in the form `init(rawValue:)` parses, e.g. "option+space".
+    var rawValue: String {
+        var tokens = [String]()
+        if modifierFlags.contains(.control) { tokens.append("control") }
+        if modifierFlags.contains(.option) { tokens.append("option") }
+        if modifierFlags.contains(.shift) { tokens.append("shift") }
+        if modifierFlags.contains(.command) { tokens.append("command") }
+        tokens.append(keyName)
+        return tokens.joined(separator: "+")
     }
 
     /// E.g. "⌥Space" or "⌃⌘D".

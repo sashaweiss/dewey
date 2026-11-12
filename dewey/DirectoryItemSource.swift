@@ -1,18 +1,19 @@
 //
-//  HomeDirectoryItemSource.swift
+//  DirectoryItemSource.swift
 //  dewey
 //
 
 import Foundation
 
-/// Finds non-hidden directories at the top level of the home directory.
-struct HomeDirectoryItemSource: LauncherItemSource {
+/// Finds a directory's non-hidden subdirectories.
+struct DirectoryItemSource: LauncherItemSource {
+    let directoryURL: URL
+
     func loadItems() -> [LauncherItem] {
         let fileManager = FileManager.default
-        let homeURL = fileManager.homeDirectoryForCurrentUser
 
         guard let contents = try? fileManager.contentsOfDirectory(
-            at: homeURL,
+            at: directoryURL,
             includingPropertiesForKeys: nil,
             options: [.skipsHiddenFiles]
         ) else {

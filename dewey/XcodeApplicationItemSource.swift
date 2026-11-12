@@ -5,10 +5,7 @@
 
 import Cocoa
 
-/// Finds the applications Xcode ships inside its own bundle: Instruments,
-/// Simulator, and friends. `ApplicationItemSource` never sees them, since
-/// it doesn't descend into packages, and they answer to the name of the
-/// Xcode vending them as well as to their own.
+/// Finds the apps inside Xcode's bundle, like Instruments and Simulator.
 struct XcodeApplicationItemSource: LauncherItemSource {
     private static let xcodeBundleIdentifier = "com.apple.dt.Xcode"
 

@@ -5,89 +5,131 @@
 
 import Foundation
 
-/// App configuration, read once at launch from a JSON file. The only write
-/// the app ever makes is seeding this file on first run, and only when
-/// nothing is there; a missing config, or any invalid part of one, falls
-/// back to defaults.
-struct DeweyConfig {
-    var hotKey: HotKeyChord = HotKeyChord.default
-
-    /// The config file location: $DEWEY_CONFIG if set (tilde-expanded),
-    /// else ~/.config/dewey/config.json. The path may be a symlink.
-    static func fileURL() -> URL {
-        let path: String
-        if let overridePath = ProcessInfo.processInfo.environment["DEWEY_CONFIG"] {
-            path = (overridePath as NSString).expandingTildeInPath
-        } else {
-            path = NSHomeDirectory() + "/.config/dewey/config.json"
-        }
-        return URL(fileURLWithPath: path).resolvingSymlinksInPath()
+/// App configuration, stored as JSON. Missing settings use defaults.
+struct DeweyConfig: Equatable, Codable {
+    private enum CodingKeys: String, CodingKey {
+        case hotKey
+        case includeOpenWindows
+        case includeXcodeApplications
+        case includeICloudDrive
+        case applicationDirectories
+        case searchedDirectories
     }
 
-    /// Seeds the config file by copying the bundled `default-config.json`,
-    /// so there's something to edit after a first launch. Does nothing at
-    /// all if a file is already at the path — an existing config is never
-    /// touched.
-    static func installDefaultIfAbsent() {
-        let url = fileURL()
-        let fileManager = FileManager.default
+    var hotKey = HotKeyChord.default
+    var includeOpenWindows = true
+    var includeXcodeApplications = true
+    var includeICloudDrive = true
+    /// Searched for apps.
+    var applicationDirectories = [
+        "/Applications",
+        "~/Applications",
+        "/System/Applications",
+        // Safari and friends live in a cryptex.
+        "/System/Cryptexes/App/System/Applications",
+    ]
+    /// Their subdirectories are searched.
+    var searchedDirectories = ["~"]
 
-        guard !fileManager.fileExists(atPath: url.path) else { return }
+    static let fileURL = URL(
+        fileURLWithPath: NSHomeDirectory() + "/.config/dewey/config.json"
+    )
 
-        guard let bundledURL = Bundle.main.url(
-            forResource: "default-config",
-            withExtension: "json"
-        ) else {
-            NSLog("No bundled default-config.json to seed the config from")
-            return
-        }
+    init() {}
 
-        do {
-            let contents = try Data(contentsOf: bundledURL)
-            try fileManager.createDirectory(
-                at: url.deletingLastPathComponent(),
-                withIntermediateDirectories: true
-            )
-            // Write the bytes rather than `copyItem`, so the new file gets
-            // normal permissions instead of inheriting the bundle's.
-            // `withoutOverwriting` closes the gap between the check above
-            // and this write.
-            try contents.write(to: url, options: .withoutOverwriting)
-        } catch {
-            NSLog("Couldn't write a default config to \(url.path): \(error)")
-        }
-    }
+    /// Ignores an unparseable hot key and relative paths.
+    init(from decoder: any Decoder) throws {
+        self.init()
+        let container = try decoder.container(keyedBy: CodingKeys.self)
 
-    static func load() -> DeweyConfig {
-        var config = DeweyConfig()
-
-        guard let data = try? Data(contentsOf: fileURL()) else {
-            return config
-        }
-
-        let file: ConfigFile
-        do {
-            file = try JSONDecoder().decode(ConfigFile.self, from: data)
-        } catch {
-            NSLog("Ignoring malformed config JSON: \(error)")
-            return config
-        }
-
-        if let rawHotKey = file.hotKey {
+        if let rawHotKey = try container.decodeIfPresent(
+            String.self,
+            forKey: .hotKey
+        ) {
             if let chord = HotKeyChord(rawValue: rawHotKey) {
-                config.hotKey = chord
+                hotKey = chord
             } else {
                 NSLog("Ignoring unparseable hotKey in config: \(rawHotKey)")
             }
         }
-
-        return config
+        includeOpenWindows = try container
+            .decodeIfPresent(Bool.self, forKey: .includeOpenWindows)
+            ?? includeOpenWindows
+        includeXcodeApplications = try container
+            .decodeIfPresent(Bool.self, forKey: .includeXcodeApplications)
+            ?? includeXcodeApplications
+        includeICloudDrive = try container
+            .decodeIfPresent(Bool.self, forKey: .includeICloudDrive)
+            ?? includeICloudDrive
+        applicationDirectories = try container
+            .decodeIfPresent([String].self, forKey: .applicationDirectories)
+            .map { Self.absolutePaths(paths: $0) }
+            ?? applicationDirectories
+        searchedDirectories = try container
+            .decodeIfPresent([String].self, forKey: .searchedDirectories)
+            .map { Self.absolutePaths(paths: $0) }
+            ?? searchedDirectories
     }
-}
 
-// MARK: -
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(hotKey.rawValue, forKey: .hotKey)
+        try container.encode(includeOpenWindows, forKey: .includeOpenWindows)
+        try container.encode(
+            includeXcodeApplications,
+            forKey: .includeXcodeApplications
+        )
+        try container.encode(includeICloudDrive, forKey: .includeICloudDrive)
+        try container.encode(
+            applicationDirectories,
+            forKey: .applicationDirectories
+        )
+        try container.encode(searchedDirectories, forKey: .searchedDirectories)
+    }
 
-/// The raw shape of the JSON file, prior to parsing and validation.
-private struct ConfigFile: Decodable {
-    var hotKey: String?
+    /// Returns the defaults if there's no config file.
+    static func load() throws -> DeweyConfig {
+        let url = fileURL.resolvingSymlinksInPath()
+        guard FileManager.default.fileExists(atPath: url.path) else {
+            return DeweyConfig()
+        }
+
+        let data = try Data(contentsOf: url)
+        let decoder = JSONDecoder()
+        decoder.allowsJSON5 = true
+        return try decoder.decode(DeweyConfig.self, from: data)
+    }
+
+    func save() throws {
+        let url = Self.fileURL.resolvingSymlinksInPath()
+        try FileManager.default.createDirectory(
+            at: url.deletingLastPathComponent(),
+            withIntermediateDirectories: true
+        )
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [
+            .prettyPrinted,
+            .sortedKeys,
+            .withoutEscapingSlashes,
+        ]
+        try encoder.encode(self).write(to: url, options: .atomic)
+    }
+
+    /// Expands a leading `~`.
+    static func directoryURL(path: String) -> URL {
+        URL(
+            fileURLWithPath: (path as NSString).expandingTildeInPath,
+            isDirectory: true
+        )
+    }
+
+    private static func absolutePaths(paths: [String]) -> [String] {
+        paths.filter { path in
+            guard (path as NSString).expandingTildeInPath.hasPrefix("/") else {
+                NSLog("Ignoring non-absolute path in config: \(path)")
+                return false
+            }
+            return true
+        }
+    }
 }

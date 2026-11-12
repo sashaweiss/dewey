@@ -1,10 +1,10 @@
 # dewey
 
-A minimal, native macOS launcher app.
+A minimal, offline macOS launcher app. Search results include:
 
-- `/Applications` and friends
-- `$HOME`
+- Each open window for each open app
+- `.apps` in `/Applications` and friends.
+- Folders in `~`
 - iCloud Drive
-- For open apps, each open window (across spaces)
-- Symlink-friendly JSON config
-- Zero network requests, minimal filesystem access
+
+Settings live in `~/.config/dewey/config.json`.

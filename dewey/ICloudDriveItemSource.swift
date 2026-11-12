@@ -5,9 +5,7 @@
 
 import Foundation
 
-/// Finds iCloud Drive, so it can be opened in Finder. It lives under
-/// `~/Library`, which `HomeDirectoryItemSource` never sees because the
-/// system marks that directory hidden.
+/// Opens iCloud Drive in Finder.
 struct ICloudDriveItemSource: LauncherItemSource {
     private static let relativePath = "Library/Mobile Documents/com~apple~CloudDocs"
 

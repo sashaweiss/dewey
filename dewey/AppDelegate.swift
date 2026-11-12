@@ -9,36 +9,29 @@ import Cocoa
 
 @main
 class AppDelegate: NSObject, NSApplicationDelegate {
+    private lazy var launcherPanelController = LauncherPanelController(
+        sources: []
+    )
     private var hotKey: GlobalHotKey?
-    private var launcherPanelController: LauncherPanelController?
+    private var hotKeyChord: HotKeyChord?
     private var statusItem: NSStatusItem?
+    private var toggleMenuItem: NSMenuItem?
+    private var settingsWindowController: SettingsWindowController?
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         // Menu bar app: no Dock icon, no app switcher entry.
         NSApp.setActivationPolicy(.accessory)
 
-        let launcherPanelController = LauncherPanelController(sources: [
-            OpenWindowSource(),
-            ApplicationItemSource(),
-            XcodeApplicationItemSource(),
-            HomeDirectoryItemSource(),
-            ICloudDriveItemSource(),
-        ])
-        self.launcherPanelController = launcherPanelController
+        setUpStatusItem()
 
-        DeweyConfig.installDefaultIfAbsent()
-        let config = DeweyConfig.load()
-        hotKey = GlobalHotKey(
-            keyCode: config.hotKey.keyCode,
-            modifierFlags: config.hotKey.modifierFlags
-        ) { [weak launcherPanelController] in
-            launcherPanelController?.toggle()
+        let config: DeweyConfig
+        do {
+            config = try DeweyConfig.load()
+        } catch {
+            NSLog("Ignoring unreadable config: \(error)")
+            config = DeweyConfig()
         }
-        if hotKey == nil {
-            NSLog("Failed to register global hot key \(config.hotKey.displayString)!")
-        }
-
-        setUpStatusItem(hotKeyChord: config.hotKey)
+        apply(config: config)
     }
 
     func applicationWillTerminate(_ aNotification: Notification) {
@@ -48,9 +41,50 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         return true
     }
 
+    // MARK: - Config
+
+    private func apply(config: DeweyConfig) {
+        var sources: [LauncherItemSource] = []
+        if config.includeOpenWindows {
+            sources.append(OpenWindowSource())
+        }
+        sources.append(ApplicationItemSource(
+            directoryURLs: config.applicationDirectories.map {
+                DeweyConfig.directoryURL(path: $0)
+            }
+        ))
+        if config.includeXcodeApplications {
+            sources.append(XcodeApplicationItemSource())
+        }
+        sources += config.searchedDirectories.map {
+            DirectoryItemSource(directoryURL: DeweyConfig.directoryURL(path: $0))
+        }
+        if config.includeICloudDrive {
+            sources.append(ICloudDriveItemSource())
+        }
+        launcherPanelController.sources = sources
+
+        guard config.hotKey != hotKeyChord else { return }
+
+        // Unregister first, in case it's the same chord.
+        hotKey = nil
+        hotKey = GlobalHotKey(
+            keyCode: config.hotKey.keyCode,
+            modifierFlags: config.hotKey.modifierFlags
+        ) { [weak launcherPanelController] in
+            launcherPanelController?.toggle()
+        }
+        if hotKey == nil {
+            NSLog("Failed to register global hot key \(config.hotKey.displayString)!")
+        }
+        hotKeyChord = config.hotKey
+        toggleMenuItem?.title =
+            "Toggle \(Bundle.main.appName) (\(config.hotKey.displayString))"
+    }
+
     // MARK: - Status item
 
-    private func setUpStatusItem(hotKeyChord: HotKeyChord) {
+    private func setUpStatusItem() {
         let statusItem = NSStatusBar.system.statusItem(
             withLength: NSStatusItem.squareLength
         )
@@ -63,12 +97,21 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         let menu = NSMenu()
 
         let toggleItem = NSMenuItem(
-            title: "Toggle \(Bundle.main.appName) (\(hotKeyChord.displayString))",
+            title: "Toggle \(Bundle.main.appName)",
             action: #selector(didSelectToggleMenuItem),
             keyEquivalent: ""
         )
         toggleItem.target = self
         menu.addItem(toggleItem)
+        toggleMenuItem = toggleItem
+
+        let settingsItem = NSMenuItem(
+            title: "Settings…",
+            action: #selector(showSettings(_:)),
+            keyEquivalent: ","
+        )
+        settingsItem.target = self
+        menu.addItem(settingsItem)
 
         menu.addItem(NSMenuItem.separator())
 
@@ -84,7 +127,20 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @objc
     private func didSelectToggleMenuItem() {
-        launcherPanelController?.toggle()
+        launcherPanelController.toggle()
+    }
+
+    /// Also sent by the launcher panel's ⌘,.
+    @objc
+    func showSettings(_ sender: Any?) {
+        launcherPanelController.hide()
+
+        let settingsWindowController = settingsWindowController
+            ?? SettingsWindowController { [weak self] config in
+                self?.apply(config: config)
+            }
+        self.settingsWindowController = settingsWindowController
+        settingsWindowController.show()
     }
 }
 

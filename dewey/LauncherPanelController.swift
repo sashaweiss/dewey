@@ -40,7 +40,7 @@ final class LauncherPanelController: NSWindowController, NSWindowDelegate,
         }
     }
 
-    private let sources: [LauncherItemSource]
+    var sources: [LauncherItemSource]
     private var allItems = [LauncherItem]()
     private var results = [LauncherItem]()
 
